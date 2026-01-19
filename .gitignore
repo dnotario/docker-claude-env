@@ -4,7 +4,12 @@
 
 # Workspace directory (user projects)
 workspace/*
-!workspace/.gitkeep
+!workspace/README.md
+!workspace/examples/
+workspace/examples/**/node_modules/
+workspace/examples/**/venv/
+workspace/examples/**/target/
+workspace/examples/**/.env
 
 # Docker volumes
 volumes/
