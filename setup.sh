@@ -255,7 +255,23 @@ build_image() {
         DOCKER_CMD="sg docker -c docker"
     fi
 
-    if $DOCKER_CMD build -t $IMAGE_NAME:$IMAGE_TAG .; then
+    # Read build args from .env file if it exists
+    local BUILD_ARGS=""
+    if [ -f .env ]; then
+        print_info "Reading build arguments from .env file..."
+        source .env
+        if [ -n "$USERNAME" ]; then
+            BUILD_ARGS="$BUILD_ARGS --build-arg USERNAME=$USERNAME"
+        fi
+        if [ -n "$USER_UID" ]; then
+            BUILD_ARGS="$BUILD_ARGS --build-arg USER_UID=$USER_UID"
+        fi
+        if [ -n "$USER_GID" ]; then
+            BUILD_ARGS="$BUILD_ARGS --build-arg USER_GID=$USER_GID"
+        fi
+    fi
+
+    if $DOCKER_CMD build $BUILD_ARGS -t $IMAGE_NAME:$IMAGE_TAG .; then
         print_success "Docker image built successfully!"
         echo ""
         $DOCKER_CMD images | grep $IMAGE_NAME
@@ -294,6 +310,9 @@ main() {
     fi
 
     echo ""
+
+    # Note: Docker storage configuration removed - not needed for building images
+    # Storage configuration should be done separately on the host if needed
 
     # Configure user settings
     configure_user

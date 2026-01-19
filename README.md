@@ -1,287 +1,178 @@
-# Claude Development Environment
+# Claude Code Docker Environment
 
-A comprehensive Docker-based development environment with Claude Code and all essential tools for frontend and backend development.
+**Minimal, isolated Docker environment for Claude Code development** - secure, reproducible, and portable.
 
-> **🚀 New to this? See [QUICKSTART.md](QUICKSTART.md) for one-script setup on a fresh machine!**
+> **🚀 First time? See [QUICKSTART.md](QUICKSTART.md) for automated setup!**
 
-## Features
+## Purpose
 
-### Development Tools Included
+This project provides a lightweight, containerized development environment specifically designed for Claude Code:
 
-**Frontend:**
-- Node.js 20 (LTS) with npm, yarn, and pnpm
-- TypeScript, ts-node
-- Vite, Webpack
-- ESLint, Prettier
-- React (create-react-app), Vue CLI, Angular CLI
+- **Isolation:** Run Claude Code in a sandboxed container, separate from your host system
+- **Portability:** Identical environment across any machine - Linux, macOS, or Windows
+- **Minimal:** Only essential tools (Node.js, Git, Claude Code) - small image size (~777MB)
+- **Secure:** Non-root user, controlled permissions, no host system modification
+- **Reproducible:** Version-controlled environment definition
 
-**Backend:**
-- Python 3 with pip, pipenv, poetry, virtualenv
-- Go 1.22
-- Rust (latest stable)
-- Common Python tools: black, flake8, pylint, pytest, ipython, jupyter
+**Use cases:**
+- Safely experiment with Claude Code without affecting your main system
+- Consistent development environment across team members
+- Quick setup on new machines or cloud instances
+- Learning and testing Claude Code features in isolation
 
-**Databases:**
-- PostgreSQL client
-- MySQL client
-- SQLite3
+## What's Included
 
-**DevOps & Tools:**
-- Docker CLI and Docker Compose
-- Git and Git LFS
-- curl, wget
-- jq, ripgrep, fd-find
-- vim, nano, zsh with oh-my-zsh
-- tmux, htop
+**Essential Tools:**
+- **Claude Code CLI** - Latest version, pre-installed
+- **Node.js 20 (LTS)** - Required for Claude Code, includes npm
+- **Git** - Version control
+- **Zsh + Oh-My-Zsh** - Enhanced shell experience
+- **Basic utilities:** vim, curl, wget, jq, unzip
 
-**AI Development:**
-- Claude Code CLI (pre-installed)
+**Not included (by design):**
+- Language runtimes (Python, Go, Rust, etc.) - install per project if needed
+- Database clients - add to Dockerfile if needed
+- Heavy IDEs or frameworks - keeps image minimal
 
 ## Quick Start
 
-### One-Line Setup
+### Automated Setup (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dnotario/docker-claude-env/main/setup.sh | bash
-```
-
-Or clone and run:
-
-```bash
-git clone https://github.com/dnotario/docker-claude-env.git
+# Clone the repository
+git clone https://github.com/yourusername/docker-claude-env.git
 cd docker-claude-env
+
+# Run setup script (installs Docker if needed, builds image)
 ./setup.sh
 ```
 
-The setup script will:
-1. Detect your operating system
-2. Install Docker if not present
-3. Configure container user to match your host UID/GID (avoids permission issues)
-4. Build the Docker image
-5. Provide usage instructions
+The setup script:
+1. Installs Docker (if not present)
+2. Configures user UID/GID matching (prevents permission issues)
+3. Builds the Docker image
+4. Provides next steps
 
 ### Manual Setup
 
-If you prefer manual installation:
-
 ```bash
-# Install Docker (if not already installed)
-# See: https://docs.docker.com/engine/install/
-
-# Build the image
+# Build image (optional: configure .env for UID/GID matching)
 docker build -t claude-dev-env:latest .
 
 # Or use docker-compose
 docker-compose build
 ```
 
-## Usage
+## Usage Options
 
-### Option 1: Direct Docker Run
+### Option 1: Docker Compose (Recommended)
 
-Run a one-off container:
+**Start the environment:**
+```bash
+docker-compose up -d           # Start container in background
+docker-compose exec dev zsh    # Enter the container
+```
+
+**Stop:**
+```bash
+docker-compose down            # Stop and remove container
+```
+
+### Option 2: Direct Docker Run
 
 ```bash
 docker run -it --rm \
   -v $(pwd)/workspace:/workspace \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   -p 3000:3000 \
-  -p 8000:8000 \
   claude-dev-env:latest
 ```
 
-### Option 2: Docker Compose (Recommended)
-
-Start the development environment:
+### Option 3: Using Make Commands
 
 ```bash
-# Start the container in detached mode
-docker-compose up -d
-
-# Enter the container
-docker-compose exec dev zsh
-
-# Stop the container
-docker-compose down
+make shell     # Enter container (starts if needed)
+make start     # Start container in background
+make stop      # Stop container
+make restart   # Restart container
+make logs      # View container logs
+make clean     # Remove container and volumes
 ```
 
-### Authenticating with Claude Code
+## First-Time Setup
 
-After entering the container for the first time, authenticate with Claude Code:
+After entering the container, authenticate with Claude Code:
 
 ```bash
-# Inside the container
 claude login
 ```
 
-This will open a browser for authentication. Your credentials will be persisted in the `dev-home` volume.
+Your credentials persist in the `dev-home` volume - only needed once.
 
-## Container Configuration
+## Configuration
 
-### Exposed Ports
+### File Permissions (Important!)
 
-- `3000` - React, Next.js default
-- `4200` - Angular default
-- `5000` - Flask default
-- `5173` - Vite default
-- `8000` - Django, FastAPI default
-- `8080` - General HTTP
-- `8888` - Jupyter Notebook
-- `9000` - Custom applications
+The container user must match your host UID/GID to avoid permission issues with mounted volumes.
 
-You can modify ports in `docker-compose.yml` or when running with `docker run`.
-
-### Volume Mounts
-
-**Default mounts in docker-compose:**
-- `./workspace` → `/workspace` - Your project files
-- `/var/run/docker.sock` → Container's Docker socket (for docker-in-docker)
-- `dev-home` volume → `/home/dev` - Persists user configs and cache
-
-**Optional mounts** (uncomment in docker-compose.yml):
-- `~/.ssh` → `/home/dev/.ssh` - SSH keys for git operations
-- `~/.gitconfig` → `/home/dev/.gitconfig` - Git configuration
-
-### User Configuration and Permissions
-
-The container runs as a non-root user for security (default: `dev`, UID: 1000, GID: 1000) with sudo access.
-
-**Important for File Permissions:**
-
-When mounting volumes from your host, file permissions can cause issues if the container user's UID/GID doesn't match your host user. The setup script automatically offers to configure this for you.
-
-**Option 1: Automatic Configuration (Recommended)**
-
-Run the setup script, which will detect your host UID/GID and configure automatically:
+**Automatic (via setup.sh):**
 ```bash
-./setup.sh
+./setup.sh  # Detects and configures automatically
 ```
 
-**Option 2: Manual Configuration**
-
-1. Check your host user's UID and GID:
+**Manual:**
 ```bash
-id
-# Output: uid=1001(yourname) gid=1001(yourgroup) ...
-```
+# Check your UID/GID
+id  # Example output: uid=1002(yourname) gid=1003(yourgroup)
 
-2. Create a `.env` file (or copy from `.env.example`):
-```bash
-cp .env.example .env
-```
-
-3. Edit `.env` and set your values:
-```env
+# Create .env file
+cat > .env <<EOF
 USERNAME=yourname
-USER_UID=1001
-USER_GID=1001
-```
+USER_UID=1002
+USER_GID=1003
+EOF
 
-4. Build with these settings:
-```bash
+# Build with custom user
 docker-compose build
 ```
 
-**Using Different UIDs:**
-- UID 1000 matches most Linux desktop users by default
-- If you have a different UID, you must configure it to avoid permission errors
-- On macOS, Docker Desktop handles permissions automatically, but matching is still recommended
-- The container user will have the same permissions as your host user for mounted files
+### Exposed Ports
 
-## Using Claude Code
+Default ports (modify in `docker-compose.yml`):
+- `3000` - Node.js development servers (React, Next.js, etc.)
+- `4200` - Angular
+- `5000` - Flask, general HTTP
+- `5173` - Vite
+- `8000` - Django, FastAPI
+- `8080` - General HTTP
+- `8888` - Jupyter
+- `9000` - Custom
 
-Claude Code is pre-installed in the container.
+### Volume Mounts
 
-**First-time setup:**
-```bash
-# Inside the container, authenticate
-claude login
-```
+**Default mounts (docker-compose.yml):**
+- `./workspace` → `/workspace` - Your project files
+- `dev-home` volume → `/home/[user]` - Persistent home directory (configs, Claude Code auth)
 
-**Using Claude Code:**
-```bash
-# Start an interactive session
-claude
-
-# Or run specific commands
-claude --help
-```
-
-Your authentication credentials are persisted in the `dev-home` volume, so you only need to log in once.
-
-## Common Tasks
-
-### Install Project Dependencies
-
-```bash
-# Node.js
-npm install
-# or
-yarn install
-# or
-pnpm install
-
-# Python
-pip install -r requirements.txt
-# or
-poetry install
-# or
-pipenv install
-
-# Go
-go mod download
-
-# Rust
-cargo build
-```
-
-### Run Tests
-
-```bash
-# Node.js
-npm test
-
-# Python
-pytest
-
-# Go
-go test ./...
-
-# Rust
-cargo test
-```
-
-### Start Development Server
-
-```bash
-# React/Vite
-npm run dev
-
-# Django
-python manage.py runserver 0.0.0.0:8000
-
-# Flask
-flask run --host=0.0.0.0
-
-# Go
-go run main.go
-```
+**Optional mounts (uncomment in docker-compose.yml):**
+- `~/.ssh` → `/home/[user]/.ssh` - SSH keys for git
+- `~/.gitconfig` → `/home/[user]/.gitconfig` - Git settings
 
 ## Customization
 
-### Adding More Tools
+### Adding Tools
 
-Edit `Dockerfile` and add your required packages:
+Edit `Dockerfile` to add project-specific dependencies:
 
 ```dockerfile
-# Add system packages
-RUN apt-get update && apt-get install -y your-package
+# Example: Add Python
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
-# Add Node.js global packages
-RUN npm install -g your-package
-
-# Add Python packages
-RUN pip install your-package
+# Example: Add Go
+ENV GO_VERSION=1.22.0
+RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
 ```
 
 Then rebuild:
@@ -289,84 +180,120 @@ Then rebuild:
 docker-compose build --no-cache
 ```
 
-### Modifying Ports
+### Changing Ports
 
-Edit `docker-compose.yml` ports section:
+Edit `docker-compose.yml`:
 ```yaml
 ports:
-  - "HOST_PORT:CONTAINER_PORT"
+  - "3001:3000"  # Use different host port
 ```
 
 ### Resource Limits
 
-Uncomment and modify the deploy section in `docker-compose.yml`:
+Uncomment in `docker-compose.yml`:
 ```yaml
 deploy:
   resources:
     limits:
-      cpus: '4'
-      memory: 8G
+      cpus: '2'
+      memory: 4G
+```
+
+## Project Structure
+
+```
+.
+├── Dockerfile              # Minimal environment definition
+├── docker-compose.yml      # Container orchestration
+├── setup.sh               # Automated setup script
+├── verify.sh              # Environment verification
+├── .env.example           # User configuration template
+├── workspace/             # Your projects go here (mounted)
+├── README.md             # This file
+└── QUICKSTART.md         # Quick start guide
 ```
 
 ## Troubleshooting
 
-### Docker Permission Issues (Linux)
-
-If you get permission errors:
+**Permission denied (Docker socket):**
 ```bash
 sudo usermod -aG docker $USER
-newgrp docker
+newgrp docker  # Or log out/in
 ```
 
-### Port Already in Use
-
-Change the host port in docker-compose.yml:
-```yaml
+**Port already in use:**
+```bash
+# Edit docker-compose.yml and change host port
 ports:
-  - "3001:3000"  # Use 3001 on host instead of 3000
+  - "3001:3000"  # Instead of 3000:3000
 ```
 
-### Container Won't Start
-
-Check logs:
+**Container won't start:**
 ```bash
-docker-compose logs dev
+docker-compose logs dev  # Check logs
+docker-compose down -v   # Reset everything
+./setup.sh              # Rebuild
 ```
 
-### Reset Everything
+**File permission issues:**
+Ensure UID/GID matches (see Configuration section above).
 
+**Need to reset completely:**
 ```bash
-# Stop and remove containers
-docker-compose down -v
-
-# Remove image
-docker rmi claude-dev-env:latest
-
-# Rebuild
-./setup.sh
+make clean              # Remove container and volumes
+docker rmi claude-dev-env:latest  # Remove image
+./setup.sh             # Fresh build
 ```
 
-## File Structure
+## Verification
 
-```
-.
-├── Dockerfile              # Main Docker image definition
-├── docker-compose.yml      # Docker Compose configuration
-├── setup.sh               # Automated setup script
-├── workspace/             # Your project files (mounted)
-└── README.md             # This file
+Test your setup:
+```bash
+./verify.sh
 ```
 
-## Contributing
+Checks:
+- Docker installation and running
+- Image built successfully
+- Container can start
+- Claude Code CLI accessible
+- Volume mounting working
+- Port forwarding working
 
-Feel free to submit issues and pull requests to improve this development environment.
+## Design Decisions
 
-## License
+**Why minimal?**
+- Faster builds and container startup
+- Smaller attack surface
+- Lower disk usage
+- Easier to understand and maintain
+- Add only what you need per project
 
-MIT License - feel free to use and modify as needed.
+**Why Docker?**
+- Complete isolation from host
+- Reproducible across machines
+- Easy to destroy/recreate
+- No host system modification
+- Portable environment definition
+
+**Why non-root user?**
+- Security best practice
+- Matches typical development workflows
+- Prevents accidental system modifications
 
 ## Resources
 
-- [Docker Documentation](https://docs.docker.com/)
 - [Claude Code Documentation](https://github.com/anthropics/claude-code)
+- [Docker Documentation](https://docs.docker.com/)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
+
+## License
+
+MIT License - See LICENSE file for details.
+
+## Contributing
+
+Issues and pull requests welcome! Please ensure:
+- Changes maintain minimal image philosophy
+- Documentation is updated
+- Setup script works on major platforms (Ubuntu, Debian, macOS)
