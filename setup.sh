@@ -198,6 +198,49 @@ check_docker_running() {
     return 1
 }
 
+# Configure user UID/GID
+configure_user() {
+    print_info "Configuring container user settings..."
+
+    # Get current user's UID and GID
+    CURRENT_UID=$(id -u)
+    CURRENT_GID=$(id -g)
+    CURRENT_USER=$(whoami)
+
+    print_info "Your host user: $CURRENT_USER (UID: $CURRENT_UID, GID: $CURRENT_GID)"
+
+    # Check if .env file exists
+    if [ -f .env ]; then
+        print_info ".env file already exists, skipping user configuration"
+        return 0
+    fi
+
+    # Ask user if they want to match UID/GID
+    echo ""
+    echo -e "${YELLOW}To avoid permission issues with mounted volumes,${NC}"
+    echo -e "${YELLOW}it's recommended to match your host UID/GID.${NC}"
+    echo ""
+    read -p "Configure container user to match your host user? (y/n) [y]: " -n 1 -r
+    echo ""
+
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        # Create .env file with current user's UID/GID
+        cat > .env <<EOF
+# Auto-configured to match host user
+USERNAME=${CURRENT_USER}
+USER_UID=${CURRENT_UID}
+USER_GID=${CURRENT_GID}
+EOF
+        print_success "Created .env with your user configuration"
+        print_info "Container user will be: $CURRENT_USER (UID: $CURRENT_UID, GID: $CURRENT_GID)"
+    else
+        print_info "Using default configuration (USERNAME=dev, UID=1000, GID=1000)"
+        print_warning "You may encounter permission issues with mounted volumes"
+        print_info "You can create a .env file later using .env.example as template"
+    fi
+    echo ""
+}
+
 # Build Docker image
 build_image() {
     print_info "Building Docker image: $IMAGE_NAME:$IMAGE_TAG"
@@ -251,6 +294,9 @@ main() {
     fi
 
     echo ""
+
+    # Configure user settings
+    configure_user
 
     # Build the image
     build_image

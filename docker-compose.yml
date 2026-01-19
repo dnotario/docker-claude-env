@@ -6,9 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        USERNAME: dev
-        USER_UID: 1000
-        USER_GID: 1000
+        USERNAME: ${USERNAME:-dev}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
     image: claude-dev-env:latest
     container_name: claude-dev
 
@@ -46,6 +46,14 @@ services:
     # Environment variables
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "test", "-e", "/workspace"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
     # Resource limits (optional)
     # deploy:

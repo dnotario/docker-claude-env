@@ -54,8 +54,9 @@ cd docker-claude-env
 The setup script will:
 1. Detect your operating system
 2. Install Docker if not present
-3. Build the Docker image
-4. Provide usage instructions
+3. Configure container user to match your host UID/GID (avoids permission issues)
+4. Build the Docker image
+5. Provide usage instructions
 
 ### Manual Setup
 
@@ -139,14 +140,51 @@ You can modify ports in `docker-compose.yml` or when running with `docker run`.
 - `~/.ssh` → `/home/dev/.ssh` - SSH keys for git operations
 - `~/.gitconfig` → `/home/dev/.gitconfig` - Git configuration
 
-### User Configuration
+### User Configuration and Permissions
 
-The container runs as a non-root user `dev` (UID: 1000, GID: 1000) with sudo access.
+The container runs as a non-root user for security (default: `dev`, UID: 1000, GID: 1000) with sudo access.
 
-To customize:
+**Important for File Permissions:**
+
+When mounting volumes from your host, file permissions can cause issues if the container user's UID/GID doesn't match your host user. The setup script automatically offers to configure this for you.
+
+**Option 1: Automatic Configuration (Recommended)**
+
+Run the setup script, which will detect your host UID/GID and configure automatically:
 ```bash
-docker-compose build --build-arg USERNAME=myuser --build-arg USER_UID=1001
+./setup.sh
 ```
+
+**Option 2: Manual Configuration**
+
+1. Check your host user's UID and GID:
+```bash
+id
+# Output: uid=1001(yourname) gid=1001(yourgroup) ...
+```
+
+2. Create a `.env` file (or copy from `.env.example`):
+```bash
+cp .env.example .env
+```
+
+3. Edit `.env` and set your values:
+```env
+USERNAME=yourname
+USER_UID=1001
+USER_GID=1001
+```
+
+4. Build with these settings:
+```bash
+docker-compose build
+```
+
+**Using Different UIDs:**
+- UID 1000 matches most Linux desktop users by default
+- If you have a different UID, you must configure it to avoid permission errors
+- On macOS, Docker Desktop handles permissions automatically, but matching is still recommended
+- The container user will have the same permissions as your host user for mounted files
 
 ## Using Claude Code
 
