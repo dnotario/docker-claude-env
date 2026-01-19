@@ -8,6 +8,8 @@ Run Claude Code in a sandboxed container with only essential tools. No host syst
 
 ## Quick Start
 
+> **Note:** This project uses Docker Compose V2 syntax (`docker compose` with a space). If you have an older installation, update Docker or use `docker-compose` (with hyphen) instead.
+
 ### Three Steps to Start
 
 **1. Clone & Setup**
@@ -19,7 +21,7 @@ cd docker-claude-env
 
 **2. Enter Container**
 ```bash
-docker-compose exec claude zsh
+docker compose exec claude zsh
 ```
 
 **3. Login to Claude**
@@ -32,12 +34,12 @@ claude        # Start coding!
 
 ### Common Commands
 ```bash
-docker-compose exec claude zsh    # Enter container
-docker-compose up -d              # Start in background
-docker-compose down               # Stop container
-docker-compose restart            # Restart
-docker-compose logs -f claude     # View logs (follow)
-docker-compose down -v            # Remove container and volumes
+docker compose exec claude zsh    # Enter container
+docker compose up -d              # Start in background
+docker compose down               # Stop container
+docker compose restart            # Restart
+docker compose logs -f claude     # View logs (follow)
+docker compose down -v            # Remove container and volumes
 ```
 
 ---
@@ -87,12 +89,12 @@ Philosophy: Start minimal, add only what you need.
 ### Option 1: Docker Compose (Recommended)
 
 ```bash
-docker-compose up -d              # Start in background
-docker-compose exec claude zsh    # Enter container ('claude' is the service name)
-docker-compose down               # Stop
+docker compose up -d              # Start in background
+docker compose exec claude zsh    # Enter container ('claude' is the service name)
+docker compose down               # Stop
 ```
 
-**Note:** `claude` is the service name defined in `docker-compose.yml`. It's a label that identifies the container configuration, not the username or image name. Docker Compose uses this to know which container to target.
+**Note:** `claude` is the service name defined in `docker compose.yml`. It's a label that identifies the container configuration, not the username or image name. Docker Compose uses this to know which container to target.
 
 ### Option 2: Direct Docker
 
@@ -107,19 +109,19 @@ docker run -it --rm \
 
 ```bash
 # Build the image
-docker-compose build
+docker compose build
 
 # Start and enter in one command
-docker-compose up -d && docker-compose exec claude zsh
+docker compose up -d && docker compose exec claude zsh
 
 # Check container status
-docker-compose ps
+docker compose ps
 
 # Stop and remove everything (including volumes)
-docker-compose down -v
+docker compose down -v
 
 # Rebuild without cache
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ---
@@ -145,12 +147,12 @@ USER_UID=1002
 USER_GID=1003
 EOF
 
-docker-compose build
+docker compose build
 ```
 
 ### Ports
 
-Default exposed ports (change in `docker-compose.yml`):
+Default exposed ports (change in `docker compose.yml`):
 - `3000` - Node.js dev servers (React, Next.js)
 - `4200` - Angular
 - `5000` - Flask
@@ -166,7 +168,7 @@ Default exposed ports (change in `docker-compose.yml`):
 - `./workspace` → `/workspace` - Your projects (shared)
 - `dev-home` volume → `/home/${USERNAME}` - Configs, Claude auth (persistent)
 
-**Optional (uncomment in docker-compose.yml):**
+**Optional (uncomment in docker compose.yml):**
 - `~/.ssh` → `/home/${USERNAME}/.ssh` - SSH keys for git
 - `~/.gitconfig` → `/home/${USERNAME}/.gitconfig` - Git config
 
@@ -196,12 +198,12 @@ ENV PATH=/usr/local/go/bin:$PATH
 
 **Rebuild:**
 ```bash
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### Changing Ports
 
-Edit `docker-compose.yml`:
+Edit `docker compose.yml`:
 ```yaml
 ports:
   - "3001:3000"  # Use different host port
@@ -209,7 +211,7 @@ ports:
 
 ### Resource Limits
 
-Uncomment in `docker-compose.yml`:
+Uncomment in `docker compose.yml`:
 ```yaml
 deploy:
   resources:
@@ -224,7 +226,7 @@ deploy:
 
 ### Basic Project
 ```bash
-docker-compose exec claude zsh
+docker compose exec claude zsh
 cd /workspace
 mkdir my-project && cd my-project
 npm init -y
@@ -237,9 +239,9 @@ claude  # Start coding with Claude
 RUN apt-get update && apt-get install -y python3 python3-pip
 ```
 ```bash
-docker-compose build
-docker-compose up -d
-docker-compose exec claude zsh
+docker compose build
+docker compose up -d
+docker compose exec claude zsh
 python3 --version  # Now available
 ```
 
@@ -264,15 +266,15 @@ newgrp docker  # Or logout/login
 
 **Port already in use:**
 ```bash
-# Edit docker-compose.yml
+# Edit docker compose.yml
 ports:
   - "3001:3000"  # Use different port
 ```
 
 **Container won't start:**
 ```bash
-docker-compose logs claude  # Check errors
-docker-compose down -v      # Reset everything
+docker compose logs claude  # Check errors
+docker compose down -v      # Reset everything
 ./setup.sh                  # Rebuild
 ```
 
@@ -284,7 +286,7 @@ docker-compose down -v      # Reset everything
 
 **Complete reset:**
 ```bash
-docker-compose down -v           # Remove containers and volumes
+docker compose down -v           # Remove containers and volumes
 docker rmi claude-dev-env:latest # Remove image
 ./setup.sh                       # Rebuild from scratch
 ```
@@ -318,7 +320,7 @@ docker rmi claude-dev-env:latest # Remove image
 ```
 .
 ├── Dockerfile              # Minimal environment definition
-├── docker-compose.yml      # Container orchestration (defines 'claude' service)
+├── docker compose.yml      # Container orchestration (defines 'claude' service)
 ├── setup.sh               # Automated setup script
 ├── verify.sh              # Environment verification
 ├── .env                   # User config (USERNAME, UID, GID)
@@ -328,7 +330,7 @@ docker rmi claude-dev-env:latest # Remove image
 ```
 
 **Key concepts:**
-- **Service name (`claude`)** - Label in docker-compose.yml used by `docker-compose exec claude zsh`
+- **Service name (`claude`)** - Label in docker compose.yml used by `docker compose exec claude zsh`
 - **Image name (`claude-dev-env`)** - The Docker image built from Dockerfile
 - **Container name (`claude-dev`)** - The running container instance
 - **Username** - User inside container (from .env, defaults to `dev`)
@@ -362,7 +364,7 @@ docker rmi claude-dev-env:latest # Remove image
 
 ### Docker-in-Docker
 
-To use Docker inside the container, uncomment in `docker-compose.yml`:
+To use Docker inside the container, uncomment in `docker compose.yml`:
 ```yaml
 volumes:
   - /var/run/docker.sock:/var/run/docker.sock
@@ -370,7 +372,7 @@ volumes:
 
 ### Custom Environment Variables
 
-Edit `docker-compose.yml`:
+Edit `docker compose.yml`:
 ```yaml
 environment:
   - MY_VAR=value
@@ -382,13 +384,13 @@ environment:
 ```bash
 # Project A
 cd project-a
-docker-compose up -d
-docker-compose exec claude zsh
+docker compose up -d
+docker compose exec claude zsh
 
 # Project B (different container)
 cd project-b
-docker-compose up -d
-docker-compose exec claude zsh
+docker compose up -d
+docker compose exec claude zsh
 ```
 
 ---
