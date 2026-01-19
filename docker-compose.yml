@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  dev:
+  claude:
     build:
       context: .
       dockerfile: Dockerfile

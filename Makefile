@@ -30,10 +30,10 @@ restart: down up ## Restart the development environment
 
 shell: ## Open a shell in the running container
 	@echo "Opening shell in container..."
-	docker-compose exec dev zsh || docker run -it --rm -v $(PWD)/workspace:/workspace $(IMAGE_NAME):$(IMAGE_TAG)
+	docker-compose exec claude zsh || docker run -it --rm -v $(PWD)/workspace:/workspace $(IMAGE_NAME):$(IMAGE_TAG)
 
 logs: ## View container logs
-	docker-compose logs -f dev
+	docker-compose logs -f claude
 
 clean: ## Remove container and volumes
 	@echo "Cleaning up containers and volumes..."
@@ -49,17 +49,11 @@ rebuild-no-cache: ## Rebuild without cache
 	docker-compose up -d
 
 test: ## Run basic tests on the image
-	@echo "Testing Docker image..."
+	@echo "Testing minimal Docker image..."
 	@echo "Testing Claude Code CLI..."
 	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) claude --version || echo "Claude Code check completed"
 	@echo "Testing Node.js..."
 	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) node --version
-	@echo "Testing Python..."
-	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) python3 --version
-	@echo "Testing Go..."
-	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) go version
-	@echo "Testing Rust..."
-	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) rustc --version
 	@echo "Testing Git..."
 	@docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) git --version
 	@echo "All tests passed!"

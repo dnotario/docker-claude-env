@@ -20,7 +20,7 @@ cd docker-claude-env
 **2. Enter Container**
 ```bash
 make shell
-# Or: docker-compose exec dev zsh
+# Or: docker-compose exec claude zsh
 ```
 
 **3. Login to Claude**
@@ -88,12 +88,12 @@ Philosophy: Start minimal, add only what you need.
 ### Option 1: Docker Compose (Recommended)
 
 ```bash
-docker-compose up -d           # Start in background
-docker-compose exec dev zsh    # Enter container ('dev' is the service name)
-docker-compose down            # Stop
+docker-compose up -d              # Start in background
+docker-compose exec claude zsh    # Enter container ('claude' is the service name)
+docker-compose down               # Stop
 ```
 
-**Note:** `dev` is the service name defined in `docker-compose.yml`. It's a label that identifies the container configuration, not the username or image name. Docker Compose uses this to know which container to target.
+**Note:** `claude` is the service name defined in `docker-compose.yml`. It's a label that identifies the container configuration, not the username or image name. Docker Compose uses this to know which container to target.
 
 ### Option 2: Direct Docker
 
@@ -264,9 +264,9 @@ ports:
 
 **Container won't start:**
 ```bash
-docker-compose logs dev  # Check errors
-make clean              # Reset everything
-./setup.sh             # Rebuild
+docker-compose logs claude  # Check errors
+make clean                  # Reset everything
+./setup.sh                  # Rebuild
 ```
 
 **File permission issues:**
@@ -311,7 +311,7 @@ docker rmi claude-dev-env:latest
 ```
 .
 ├── Dockerfile              # Minimal environment definition
-├── docker-compose.yml      # Container orchestration (defines 'dev' service)
+├── docker-compose.yml      # Container orchestration (defines 'claude' service)
 ├── setup.sh               # Automated setup script
 ├── verify.sh              # Environment verification
 ├── Makefile               # Convenience commands
@@ -322,7 +322,7 @@ docker rmi claude-dev-env:latest
 ```
 
 **Key concepts:**
-- **Service name (`dev`)** - Label in docker-compose.yml used by `docker-compose exec dev zsh`
+- **Service name (`claude`)** - Label in docker-compose.yml used by `docker-compose exec claude zsh`
 - **Image name (`claude-dev-env`)** - The Docker image built from Dockerfile
 - **Container name (`claude-dev`)** - The running container instance
 - **Username** - User inside container (from .env, defaults to `dev`)
@@ -377,12 +377,12 @@ environment:
 # Project A
 cd project-a
 docker-compose up -d
-docker-compose exec dev zsh
+docker-compose exec claude zsh
 
 # Project B (different container)
 cd project-b
 docker-compose up -d
-docker-compose exec dev zsh
+docker-compose exec claude zsh
 ```
 
 ---
