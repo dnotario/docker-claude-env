@@ -89,9 +89,11 @@ Philosophy: Start minimal, add only what you need.
 
 ```bash
 docker-compose up -d           # Start in background
-docker-compose exec dev zsh    # Enter container
+docker-compose exec dev zsh    # Enter container ('dev' is the service name)
 docker-compose down            # Stop
 ```
+
+**Note:** `dev` is the service name defined in `docker-compose.yml`. It's a label that identifies the container configuration, not the username or image name. Docker Compose uses this to know which container to target.
 
 ### Option 2: Direct Docker
 
@@ -156,11 +158,13 @@ Default exposed ports (change in `docker-compose.yml`):
 
 **Default mounts:**
 - `./workspace` → `/workspace` - Your projects (shared)
-- `dev-home` volume → `/home/[user]` - Configs, Claude auth (persistent)
+- `dev-home` volume → `/home/${USERNAME}` - Configs, Claude auth (persistent)
 
 **Optional (uncomment in docker-compose.yml):**
-- `~/.ssh` → `/home/[user]/.ssh` - SSH keys for git
-- `~/.gitconfig` → `/home/[user]/.gitconfig` - Git config
+- `~/.ssh` → `/home/${USERNAME}/.ssh` - SSH keys for git
+- `~/.gitconfig` → `/home/${USERNAME}/.gitconfig` - Git config
+
+**Note:** Home directory path uses the `USERNAME` variable from `.env` (defaults to `dev`). This ensures Claude Code auth and configs persist correctly even with custom usernames.
 
 ---
 
@@ -307,14 +311,21 @@ docker rmi claude-dev-env:latest
 ```
 .
 ├── Dockerfile              # Minimal environment definition
-├── docker-compose.yml      # Container orchestration
+├── docker-compose.yml      # Container orchestration (defines 'dev' service)
 ├── setup.sh               # Automated setup script
 ├── verify.sh              # Environment verification
 ├── Makefile               # Convenience commands
+├── .env                   # User config (USERNAME, UID, GID)
 ├── .env.example           # User config template
 ├── workspace/             # Your projects (mounted)
 └── README.md             # This file
 ```
+
+**Key concepts:**
+- **Service name (`dev`)** - Label in docker-compose.yml used by `docker-compose exec dev zsh`
+- **Image name (`claude-dev-env`)** - The Docker image built from Dockerfile
+- **Container name (`claude-dev`)** - The running container instance
+- **Username** - User inside container (from .env, defaults to `dev`)
 
 ---
 

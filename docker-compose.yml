@@ -23,11 +23,11 @@ services:
       # Mount Docker socket for docker-in-docker
       - /var/run/docker.sock:/var/run/docker.sock
       # Persist user home directory (for configs, cache, etc.)
-      - dev-home:/home/dev
+      - dev-home:/home/${USERNAME:-dev}
       # Optional: Mount your host SSH keys for git operations
-      # - ~/.ssh:/home/dev/.ssh:ro
+      # - ~/.ssh:/home/${USERNAME:-dev}/.ssh:ro
       # Optional: Mount your host git config
-      # - ~/.gitconfig:/home/dev/.gitconfig:ro
+      # - ~/.gitconfig:/home/${USERNAME:-dev}/.gitconfig:ro
 
     # Network mode
     network_mode: bridge
