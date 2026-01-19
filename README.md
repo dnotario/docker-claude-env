@@ -2,6 +2,8 @@
 
 A comprehensive Docker-based development environment with Claude Code and all essential tools for frontend and backend development.
 
+> **🚀 New to this? See [QUICKSTART.md](QUICKSTART.md) for one-script setup on a fresh machine!**
+
 ## Features
 
 ### Development Tools Included
