@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USERNAME: dev
+        USER_UID: 1000
+        USER_GID: 1000
+    image: claude-dev-env:latest
+    container_name: claude-dev
+
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+    # Mount your workspace
+    volumes:
+      # Mount current directory to workspace
+      - ./workspace:/workspace
+      # Mount Docker socket for docker-in-docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Persist user home directory (for configs, cache, etc.)
+      - dev-home:/home/dev
+      # Optional: Mount your host SSH keys for git operations
+      # - ~/.ssh:/home/dev/.ssh:ro
+      # Optional: Mount your host git config
+      # - ~/.gitconfig:/home/dev/.gitconfig:ro
+
+    # Network mode
+    network_mode: bridge
+
+    # Expose common development ports
+    ports:
+      - "3000:3000"   # React, Next.js
+      - "4200:4200"   # Angular
+      - "5000:5000"   # Flask
+      - "5173:5173"   # Vite
+      - "8000:8000"   # Django, FastAPI
+      - "8080:8080"   # General HTTP
+      - "8888:8888"   # Jupyter
+      - "9000:9000"   # Custom
+
+    # Environment variables
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+    # Resource limits (optional)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+    #     reservations:
+    #       cpus: '2'
+    #       memory: 4G
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Working directory
+    working_dir: /workspace
+
+volumes:
+  dev-home:
+    driver: local
