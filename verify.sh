@@ -144,8 +144,8 @@ if [ $FAILED -eq 0 ]; then
     echo -e "${GREEN}✓ All tests passed! Your environment is ready.${NC}"
     echo ""
     echo -e "To get started:"
-    echo -e "  ${YELLOW}make shell${NC}       - Enter the development container"
-    echo -e "  ${YELLOW}claude login${NC}     - Authenticate with Claude (first time only)"
+    echo -e "  ${YELLOW}docker-compose exec claude zsh${NC}  - Enter the development container"
+    echo -e "  ${YELLOW}claude login${NC}                    - Authenticate with Claude (first time only)"
     echo ""
     echo -e "Your projects go in: ${YELLOW}./workspace/${NC}"
     exit 0
@@ -154,7 +154,7 @@ else
     echo ""
     echo -e "Common fixes:"
     echo -e "  - Run ${YELLOW}./setup.sh${NC} to rebuild"
-    echo -e "  - Run ${YELLOW}make rebuild${NC} to rebuild from scratch"
+    echo -e "  - Run ${YELLOW}docker-compose down -v && docker-compose build --no-cache${NC} to rebuild from scratch"
     echo -e "  - Check Docker is running: ${YELLOW}docker info${NC}"
     exit 1
 fi

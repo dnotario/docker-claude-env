@@ -19,8 +19,7 @@ cd docker-claude-env
 
 **2. Enter Container**
 ```bash
-make shell
-# Or: docker-compose exec claude zsh
+docker-compose exec claude zsh
 ```
 
 **3. Login to Claude**
@@ -33,12 +32,12 @@ claude        # Start coding!
 
 ### Common Commands
 ```bash
-make shell     # Enter container
-make start     # Start in background
-make stop      # Stop container
-make restart   # Restart
-make logs      # View logs
-make clean     # Reset everything
+docker-compose exec claude zsh    # Enter container
+docker-compose up -d              # Start in background
+docker-compose down               # Stop container
+docker-compose restart            # Restart
+docker-compose logs -f claude     # View logs (follow)
+docker-compose down -v            # Remove container and volumes
 ```
 
 ---
@@ -104,16 +103,23 @@ docker run -it --rm \
   claude-dev-env:latest
 ```
 
-### Option 3: Make Commands
+### Option 3: Additional Commands
 
 ```bash
-make shell     # Enter container (starts if needed)
-make start     # Start background
-make stop      # Stop
-make restart   # Restart
-make logs      # View logs
-make clean     # Remove everything
-make help      # Show all commands
+# Build the image
+docker-compose build
+
+# Start and enter in one command
+docker-compose up -d && docker-compose exec claude zsh
+
+# Check container status
+docker-compose ps
+
+# Stop and remove everything (including volumes)
+docker-compose down -v
+
+# Rebuild without cache
+docker-compose build --no-cache
 ```
 
 ---
@@ -218,7 +224,7 @@ deploy:
 
 ### Basic Project
 ```bash
-make shell
+docker-compose exec claude zsh
 cd /workspace
 mkdir my-project && cd my-project
 npm init -y
@@ -232,7 +238,8 @@ RUN apt-get update && apt-get install -y python3 python3-pip
 ```
 ```bash
 docker-compose build
-make shell
+docker-compose up -d
+docker-compose exec claude zsh
 python3 --version  # Now available
 ```
 
@@ -265,7 +272,7 @@ ports:
 **Container won't start:**
 ```bash
 docker-compose logs claude  # Check errors
-make clean                  # Reset everything
+docker-compose down -v      # Reset everything
 ./setup.sh                  # Rebuild
 ```
 
@@ -277,9 +284,9 @@ make clean                  # Reset everything
 
 **Complete reset:**
 ```bash
-make clean
-docker rmi claude-dev-env:latest
-./setup.sh
+docker-compose down -v           # Remove containers and volumes
+docker rmi claude-dev-env:latest # Remove image
+./setup.sh                       # Rebuild from scratch
 ```
 
 **Verify installation:**
@@ -314,7 +321,6 @@ docker rmi claude-dev-env:latest
 ├── docker-compose.yml      # Container orchestration (defines 'claude' service)
 ├── setup.sh               # Automated setup script
 ├── verify.sh              # Environment verification
-├── Makefile               # Convenience commands
 ├── .env                   # User config (USERNAME, UID, GID)
 ├── .env.example           # User config template
 ├── workspace/             # Your projects (mounted)
